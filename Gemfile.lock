@@ -1,10 +1,15 @@
 GEM
+  remote: https://rubygems.org/
   specs:
+    cnpj_utils (1.2.0)
+    cpf_utils (1.3.1)
 
 PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  cnpj_utils (~> 1.2)
+  cpf_utils (~> 1.3, >= 1.3.1)
 
 BUNDLED WITH
    2.4.10

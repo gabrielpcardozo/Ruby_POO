@@ -26,7 +26,7 @@ class Person
     end
 end
 
-class FisicPerson < Person
+class Individual < Person #Pessoa Física
     attr_accessor :cpf, :last_name, :gender, :type
 
     def initialize(name, age, address, last_name, gender, type = "Pessoa Física")
@@ -47,3 +47,23 @@ class FisicPerson < Person
 
     end
 end
+
+class Entity < Person #Pessoa Jurídica 
+    attr_accessor :cnpj, :business_entities, :type
+
+    def initialize(name, age, address,cnpj, business_entities, type="Pessoa Jurídica")
+        super(name, age, address)
+        set_cnpj()
+        @business_entities = business_entities
+        @type = type
+    end
+
+    def get_full_name
+        @name + ' ' + @business_entities
+    end
+
+    def set_cnpj()
+        new_cnpj = CnpjUtils.cnpj
+        @cnpj = new_cnpj.to_cpf_format
+    end
+
