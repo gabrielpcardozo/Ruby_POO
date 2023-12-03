@@ -1,62 +1,48 @@
 require 'time'
 require 'cpf_utils'
+require 'cnpj_utils'
 #A ideia desse arquivo é criar um sistema de pessoas Física e pessoa Jurídica para a construção da base do projeto.
 class Person
-    attr_accessor :name, :age, :rg, :alive
+    @@count_person = 0
+    attr_accessor :name, :last_name, :age, :alive, :address, :cep, :house_number, :gender
 
-    def initialize(name, age, rg)
+    def initialize(name, last_name, age, address, gender)
+        @@count_person += 1
         @name = name
-        @alive = true
-        set_age(age)
-
-    end
-
-    def set_age(age)
-    birth_date = Time.parse(age)
-    current_date = Time.now
-    difference_in_seconds = current_date - birth_date
-    @age = (difference_in_seconds / (365.25 * 24 * 60 * 60)).floor
-    end
-
-
-end
-
-class Individual < Person #Pessoa Física
-    attr_accessor :cpf,:last_name, :gender, :type, :address, :cep, :house_number,
-#Cria uma pessoa Física, basicamente coloca a pessoa dentro das leis.
-    def initialize(name, age, address, last_name, gender, type = "Pessoa Física")
-        super(name, age, address)
-        set_cpf()
         @last_name = last_name
         @gender = gender
-        @type = type
+        @alive = true
+        set_age(age)
         set_address(address)
-
-        end
+    end
 
 =begin
-Métodos
-        Trabalhar
-        Abrir uma empresa
-        Abrir uma conta no Banco 
-Atributos
-        Nome e nome completo
-        enderço e endereço completo 
-        gênero
-        idade
-        Nome sujo ou limpo
+Métodos 
+    Ficar maios velho -> Só fazer de uma forma que a pessoa fique mais velha.
+        As idades vão ser importantes para as interacoes com um ampresa
+atributos
+    Nome
+    idade
+    rg
+    satatus -> Vivo ou morto
 =end
+    def self.total_count_person
+        @@count_person
+    end
     
-    def get_full_name
-        @name +' '+ @last_name
 
+    def full_name
+        @name + ' ' + @last_name
     end
 
-    def set_cpf()#Defini um CPF para uma pessoa 
-        new_cpf = CpfUtils.cpf
-        @cpf = new_cpf.to_cpf_format
 
+    def set_age(age)
+        birth_date = Time.parse(age)
+        current_date = Time.now #Usa a gem time para pegar a data atual.
+        difference_in_seconds = current_date - birth_date #Faco uma conta da data atual menos a data de nascimento
+        @age = (difference_in_seconds / (365.25 * 24 * 60 * 60)).floor #faco as contas formatando e arredondando. 
     end
+    
 
     def set_address(address)
         parts = address.split(/,\s*/)
@@ -67,16 +53,74 @@ Atributos
     end
 
 
+    def birthday
+        @age += 1
+    end
+
+    
+    def display
+        puts "Nome da intância: #{@name}, Nome completo: #{self.full_name}." 
+        puts "Tenho #{self.age} anos."
+        puts "Moro na rua: #{self.address}, número:#{self.house_number}, Cep:#{self.cep}"
+    end
+
 end
 
-class Entity < Person #Pessoa Jurídica 
+class Individual < Person #Pessoa Física
+    @@count_individual = 0
+    attr_accessor :cpf, :type, :rg
+#Cria uma pessoa Física, basicamente formaliza a pessoa criada como um cidadão.
+    def initialize(name, last_name, age, address, gender, alive = true, rg = nil, type = "Pessoa Física")
+        super(name,last_name, age, address, gender)
+        @type = type
+        set_cpf
+        set_rg
+    end
+
+=begin
+Métodos
+        Procurar um emprego
+            Vai somente ter uma AREA e um CARGO como escolho para empresa contratar.
+        Trabalhar
+            Vai trabalhar na area e ter um status de empregado
+        Abrir uma empresa
+            Vai poder abrir uma empresa
+        Abrir uma conta no Banco
+            Quero fazer exclusivamente uma empresa seja um banco, onde o banco vai contratar pessoas e ainda funcionar como um banco. 
+Atributos
+        Nome e nome completo
+        enderço e endereço completo 
+        gênero
+        idade
+        Nome sujo ou limpo
+=end
+
+    def set_cpf #Defini um CPF para uma pessoa 
+        new_cpf = CpfUtils.cpf
+        @cpf = new_cpf.to_cpf_format
+    
+    end
+    
+    
+    def set_rg()
+        @rg = ''
+        9.times { @rg += rand(10).to_s }
+        @rg = @rg[0..1] + '.' + @rg[2..4] + '.' + @rg[5..7] + '-' + rand(10).to_s + rand(10).to_s
+        @rg
+    end
+
+end
+
+class Entity < Person #Pessoa Jurídica
+    @@count_entity = 0 
     attr_accessor :cnpj, :business_entities, :type
 #Cria uma pessoa Jurídica. Vou criar um sistema mais perto do real que eu conseguir.
 
 
-    def initialize(name, age, address,cnpj, business_entities, type="Pessoa Jurídica")
-        super(name, age, address)
-        set_cnpj()
+    def initialize(name, age, address, business_entities, type = "Pessoa Jurídica")
+        super(name,last_name, age, address, gender)
+        @@count_entity += 1
+        set_cnpj
         @business_entities = business_entities
         @type = type
 
@@ -92,7 +136,6 @@ Métodos
     criar cargos dentro de equipes
     Verifica se o nome dos fundadores estão limpos
     Verifica se são maiores de idade
-
 Atributos
     Nome juríridico da Empresa
     Nome fantasia 
@@ -100,15 +143,25 @@ Atributos
     Código e descrição da natureza jurídica
 =end
 
+
+    def self.count_entity
+        puts @@count_entity
+    
+    end
+
+
     def get_full_name
         @name + ' ' + @business_entities
 
     end
 
-    def set_cnpj()
+    def set_cnpj
         new_cnpj = CnpjUtils.cnpj
-        @cnpj = new_cnpj.to_cpf_format
+        @cnpj = new_cnpj.to_cnpj_format
 
     end
 
+
 end
+
+puts CnpjUtils.cnpj.to_cpf_format
