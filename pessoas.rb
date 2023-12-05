@@ -42,7 +42,7 @@ atributos
         difference_in_seconds = current_date - birth_date #Faco uma conta da data atual menos a data de nascimento
         @age = (difference_in_seconds / (365.25 * 24 * 60 * 60)).floor #faco as contas formatando e arredondando. 
     end
-    
+
 
     def set_address(address)
         parts = address.split(/,\s*/)
@@ -57,8 +57,8 @@ atributos
         @age += 1
     end
 
-    
-    def display
+
+    def display_person
         puts "Nome da intância: #{@name}, Nome completo: #{self.full_name}." 
         puts "Tenho #{self.age} anos."
         puts "Moro na rua: #{self.address}, número:#{self.house_number}, Cep:#{self.cep}"
@@ -68,20 +68,24 @@ end
 
 class Individual < Person #Pessoa Física
     @@count_individual = 0
-    attr_accessor :cpf, :type, :rg
+    attr_accessor :cpf, :type, :rg, :sector, :role, :company
 #Cria uma pessoa Física, basicamente formaliza a pessoa criada como um cidadão.
     def initialize(name, last_name, age, address, gender, alive = true, rg = nil, type = "Pessoa Física")
         super(name,last_name, age, address, gender)
+        @@count_individual += 1
         @type = type
+        @sector = nil
+        @role = nil
+        @company = nil#EU vou ter que mudar isso aqui para algo global para dentro da classe pessoa juridica conseguir alcançar.
         set_cpf
         set_rg
     end
 
 =begin
 Métodos
-        Procurar um emprego
-            Vai somente ter uma AREA e um CARGO como escolho para empresa contratar.
-        Trabalhar
+        Procurar um emprego -> def Choose_job
+            Vai somente ter uma AREA e um CARGO como escolha para empresa contratar.
+        Trabalhar -> def working? 
             Vai trabalhar na area e ter um status de empregado
         Abrir uma empresa
             Vai poder abrir uma empresa
@@ -94,6 +98,10 @@ Atributos
         idade
         Nome sujo ou limpo
 =end
+    def self.total_count_individual
+        @@count_individual
+    end
+
 
     def set_cpf #Defini um CPF para uma pessoa 
         new_cpf = CpfUtils.cpf
@@ -101,13 +109,42 @@ Atributos
     
     end
     
-    
-    def set_rg()
+
+    def set_rg
         @rg = ''
         9.times { @rg += rand(10).to_s }
-        @rg = @rg[0..1] + '.' + @rg[2..4] + '.' + @rg[5..7] + '-' + rand(10).to_s + rand(10).to_s
+        @rg = @rg[0..1] + '.' +
+         @rg[2..4] + '.' + @rg[5..7] + '-' + rand(10).to_s + rand(10).to_s
         @rg
     end
+
+
+    def choose_job(sector = nil, role = nil)
+        puts "Qual o seu setor desejado?"
+        @sector = gets.chomp    
+        puts "Qual o seu cargo de preferência?"
+        @role = gets.chomp
+    #Quando eu chemei essa funcao ela deu um comportamento novo, ele simplesmente impriminha o meu ultimo valor definido nao faco a menor ideia o do pq. 
+    #Para resovler eu so chamei a funcao sem o PUTS para ter uma chamada mais direta.
+    end
+
+
+    def working?
+        if self.role.nil? || self.company.nil?
+            "Informações insuficientes para estar trabalhando."
+        else
+            "Trabalhando com #{self.role}, na #{@company}."
+        end
+    end
+
+
+    def display_individual
+        puts "Nome da intância: #{self.name}, Nome completo: #{@full_name}." 
+        puts "Tenho #{self.age} anos, gênero:#{self.gender}."
+        puts "Informações pessoais, CPF:#{self.cpf}, RG:#{self.rg}, Tipo:#{self.type}."
+        puts "Moro na rua: #{self.address}, número:#{self.house_number}, Cep:#{self.cep}"
+    end
+
 
 end
 
@@ -163,5 +200,3 @@ Atributos
 
 
 end
-
-puts CnpjUtils.cnpj.to_cpf_format
