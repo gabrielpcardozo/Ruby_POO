@@ -1,7 +1,9 @@
 require 'time'
 require 'cpf_utils'
 require 'cnpj_utils'
+require 'date'
 #A ideia desse arquivo é criar um sistema de pessoas Física e pessoa Jurídica para a construção da base do projeto.
+
 class Person
     @@count_person = 0
     attr_accessor :name, :last_name, :age, :alive, :address, :cep, :house_number, :gender
@@ -57,7 +59,6 @@ atributos
         @age += 1
     end
 
-
     def display_person
         puts "Nome da intância: #{@name}, Nome completo: #{self.full_name}." 
         puts "Tenho #{self.age} anos."
@@ -70,27 +71,29 @@ class Individual < Person #Pessoa Física
     @@count_individual = 0
     attr_accessor :cpf, :type, :rg, :sector, :role, :company
 #Cria uma pessoa Física, basicamente formaliza a pessoa criada como um cidadão.
-    def initialize(name, last_name, age, address, gender, alive = true, rg = nil, type = "Pessoa Física")
+    def initialize(name, last_name, age, address, gender, rg = nil, type = "Pessoa Física")
         super(name,last_name, age, address, gender)
         @@count_individual += 1
         @type = type
         @sector = nil
         @role = nil
-        @company = nil#EU vou ter que mudar isso aqui para algo global para dentro da classe pessoa juridica conseguir alcançar.
+        @company = "Não possui empresa aberta nesse CPF."#EU vou ter que mudar isso aqui para algo global para dentro da classe pessoa juridica conseguir alcançar, se é que já não é.
         set_cpf
         set_rg
     end
 
 =begin
 Métodos
-        Procurar um emprego -> def Choose_job
-            Vai somente ter uma AREA e um CARGO como escolha para empresa contratar.
-        Trabalhar -> def working? 
-            Vai trabalhar na area e ter um status de empregado
-        Abrir uma empresa
-            Vai poder abrir uma empresa
-        Abrir uma conta no Banco
-            Quero fazer exclusivamente uma empresa seja um banco, onde o banco vai contratar pessoas e ainda funcionar como um banco. 
+    Cria um CPF -> def set_cpf
+        Função que utiliza a gem do jackson pires
+    Procurar um emprego -> def Choose_job
+        Vai somente ter uma AREA e um CARGO como escolha para empresa contratar.
+    Trabalhar -> def working? 
+        Vai trabalhar na area e ter um status de empregado
+    Abrir uma empresa
+        Vai poder abrir uma empresa
+    Abrir uma conta no Banco
+        Quero fazer exclusivamente uma empresa seja um banco, onde o banco vai contratar pessoas e ainda funcionar como um banco. 
 Atributos
         Nome e nome completo
         enderço e endereço completo 
@@ -137,6 +140,18 @@ Atributos
         end
     end
 
+    def open_company(name, address, business_entities, description)
+        if @alive && self.age > 18
+          puts "Approve"
+          puts "Estamos dando andamento na papelada."
+          company = Entity.new(name, address, business_entities, description)
+          return @company = company
+        else
+          puts "Not approve"
+          return nil  # ou qualquer valor de retorno adequado
+        end
+      end
+
 
     def display_individual
         puts "Nome da intância: #{self.name}, Nome completo: #{@full_name}." 
@@ -148,30 +163,34 @@ Atributos
 
 end
 
-class Entity < Person #Pessoa Jurídica
-    @@count_entity = 0 
-    attr_accessor :cnpj, :business_entities, :type
-#Cria uma pessoa Jurídica. Vou criar um sistema mais perto do real que eu conseguir.
+class Entity #Pessoa Jurídica
+    @@count_entity = 0
 
+    attr_accessor :name, :cnpj, :business_entities, :type, :age, :description, :born_age
 
-    def initialize(name, age, address, business_entities, type = "Pessoa Jurídica")
-        super(name,last_name, age, address, gender)
+    #Cria uma pessoa Jurídica. Vou criar um sistema mais perto do real que eu conseguir.
+    def initialize(name, address, business_entities, description = " ",type = "Pessoa Jurídica")
         @@count_entity += 1
-        set_cnpj
+        @name = name
         @business_entities = business_entities
         @type = type
-
+        @description = " "
+        @born_age = Time.now
+        set_age
+        set_cnpj
     end
 
 =begin
 Métodos
-    Cria um CNPJ
+    Cria um CNPJ -> set_cnpj
+        Função que utiliza a gem do jackson pires
+    Criar uma empresa -> set_company
     Contratar pessoas
-    demitir pessoas
-    pagar pessoas
-    criar equipes dentro da empresa
-    criar cargos dentro de equipes
-    Verifica se o nome dos fundadores estão limpos
+    Demitir pessoas
+    Pagar pessoas
+    Criar equipes dentro da empresa
+    Criar cargos dentro de equipes
+    verifica se o nome dos fundadores estão limpos
     Verifica se são maiores de idade
 Atributos
     Nome juríridico da Empresa
@@ -180,10 +199,14 @@ Atributos
     Código e descrição da natureza jurídica
 =end
 
-
     def self.count_entity
         puts @@count_entity
     
+    end
+
+    def set_cnpj
+        new_cnpj = CnpjUtils.cnpj
+        @cnpj = new_cnpj.to_cnpj_format
     end
 
 
@@ -191,12 +214,16 @@ Atributos
         @name + ' ' + @business_entities
 
     end
-
-    def set_cnpj
-        new_cnpj = CnpjUtils.cnpj
-        @cnpj = new_cnpj.to_cnpj_format
-
-    end
-
-
+=begin
+    def date_born
+        born_age = Time.now
+        puts @born_age = born_age
+      end
+=end
+    def set_age
+          # Lógica para calcular a idade usando @born_age (data de nascimento)
+          current = Time.now
+          difference_in_seconds = current - @born_age
+          @age = (difference_in_seconds / (365.25 * 24 * 60 * 60)).floor
+      end
 end
