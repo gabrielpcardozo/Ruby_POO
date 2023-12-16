@@ -6,15 +6,16 @@ require 'date'
 
 class Person
     @@count_person = 0
-    attr_accessor :name, :last_name, :age, :alive, :address, :cep, :house_number, :gender
+    attr_accessor :name, :last_name, :age, :alive, :address, :cep, :house_number, :gender, :born_age
 
-    def initialize(name, last_name, age, address, gender)
+        def initialize(name, last_name, born_age, address, gender)
         @@count_person += 1
         @name = name
         @last_name = last_name
         @gender = gender
         @alive = true
-        set_age(age)
+        @born_age = born_age
+        set_age()
         set_address(address)
     end
 
@@ -38,12 +39,14 @@ atributos
     end
 
 
-    def set_age(age)
-        birth_date = Time.parse(age)
-        current_date = Time.now #Usa a gem time para pegar a data atual.
-        difference_in_seconds = current_date - birth_date #Faco uma conta da data atual menos a data de nascimento
-        @age = (difference_in_seconds / (365.25 * 24 * 60 * 60)).floor #faco as contas formatando e arredondando. 
-    end
+    def set_age
+        # Lógica para calcular a idade usando @born_age (data de nascimento)
+        current = Time.now
+        born_age = Time.parse(@born_age)
+        difference_in_seconds = current.to_i - born_age.to_i
+        #puts difference_in_seconds
+        @age = (difference_in_seconds / (365.25 * 24 * 60 * 60)).floor
+      end
 
 
     def set_address(address)
@@ -101,10 +104,14 @@ Atributos
         idade
         Nome sujo ou limpo
 =end
+
     def self.total_count_individual
         @@count_individual
     end
-
+    
+    def object
+        self
+    end
 
     def set_cpf #Defini um CPF para uma pessoa 
         new_cpf = CpfUtils.cpf
@@ -140,11 +147,12 @@ Atributos
         end
     end
 
-    def open_company(name, address, business_entities, description)
+    def open_company(name, address, business_entities, born_age, description)
+        #name, address, business_entities, born_age, description = " ",type = "Pessoa Jurídica"
         if @alive && self.age > 18
           puts "Approve"
           puts "Estamos dando andamento na papelada."
-          company = Entity.new(name, address, business_entities, description)
+          @company = Entity.new(name, address, business_entities, born_age, description)
           return @company = company
         else
           puts "Not approve"
@@ -163,20 +171,21 @@ Atributos
 
 end
 
-class Entity #Pessoa Jurídica
+class Entity < Person#Pessoa Jurídica
     @@count_entity = 0
 
     attr_accessor :name, :cnpj, :business_entities, :type, :age, :description, :born_age
 
     #Cria uma pessoa Jurídica. Vou criar um sistema mais perto do real que eu conseguir.
-    def initialize(name, address, business_entities, description = " ",type = "Pessoa Jurídica")
+    def initialize(name, address, business_entities, born_age, description = " ",type = "Pessoa Jurídica")
+        super(name, last_name = business_entities, born_age, address, gender="Não necessário")
         @@count_entity += 1
         @name = name
         @business_entities = business_entities
         @type = type
         @description = " "
-        @born_age = Time.now
-        set_age
+        @born_age = born_age
+        #set_age
         set_cnpj
     end
 
@@ -190,8 +199,6 @@ Métodos
     Pagar pessoas
     Criar equipes dentro da empresa
     Criar cargos dentro de equipes
-    verifica se o nome dos fundadores estão limpos
-    Verifica se são maiores de idade
 Atributos
     Nome juríridico da Empresa
     Nome fantasia 
@@ -201,8 +208,8 @@ Atributos
 
     def self.count_entity
         puts @@count_entity
-    
     end
+
 
     def set_cnpj
         new_cnpj = CnpjUtils.cnpj
@@ -212,18 +219,5 @@ Atributos
 
     def get_full_name
         @name + ' ' + @business_entities
-
     end
-=begin
-    def date_born
-        born_age = Time.now
-        puts @born_age = born_age
-      end
-=end
-    def set_age
-          # Lógica para calcular a idade usando @born_age (data de nascimento)
-          current = Time.now
-          difference_in_seconds = current - @born_age
-          @age = (difference_in_seconds / (365.25 * 24 * 60 * 60)).floor
-      end
 end
