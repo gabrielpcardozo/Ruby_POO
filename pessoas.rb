@@ -173,11 +173,10 @@ end
 
 class Entity < Person#Pessoa Jurídica
     @@count_entity = 0
-
-    attr_accessor :name, :cnpj, :business_entities, :type, :age, :description, :born_age
+    attr_accessor :name, :cnpj, :business_entities, :type, :age, :description, :born_age, :company_structure
 
     #Cria uma pessoa Jurídica. Vou criar um sistema mais perto do real que eu conseguir.
-    def initialize(name, address, business_entities, born_age, description = " ",type = "Pessoa Jurídica")
+    def initialize(name, address, business_entities, born_age, description = " ", type = "Pessoa Jurídica")
         super(name, last_name = business_entities, born_age, address, gender="Não necessário")
         @@count_entity += 1
         @name = name
@@ -185,7 +184,7 @@ class Entity < Person#Pessoa Jurídica
         @type = type
         @description = " "
         @born_age = born_age
-        #set_age
+        @company_structure = {}#@company_structure = {"Team":[{"cargo":"Analista1"},{"Colaborador":class.object}]}
         set_cnpj
     end
 
@@ -219,5 +218,15 @@ Atributos
 
     def get_full_name
         @name + ' ' + @business_entities
+    end
+    
+    def create_team(team_name)
+        @company_structure[team_name] = []
+      end
+    
+      def set_role(team_name, role, employee)
+        create_team(team_name) unless @company_structure.key?(team_name)
+        @company_structure[team_name] << {"Role": role}
+        @company_structure[team_name] << {"employee": employee}
     end
 end
