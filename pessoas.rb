@@ -149,7 +149,7 @@ Atributos
 
     def open_company(name, address, business_entities, born_age, description)
         #name, address, business_entities, born_age, description = " ",type = "Pessoa Jurídica"
-        if @alive && self.age > 18
+        if @alive && self.age > 18# Aqui por mais que nao seja uma verificao tao efetiva assim, achei importante ter uma validacao.
           puts "Approve"
           puts "Estamos dando andamento na papelada."
           @company = Entity.new(name, address, business_entities, born_age, description)
@@ -184,7 +184,7 @@ class Entity < Person#Pessoa Jurídica
         @type = type
         @description = " "
         @born_age = born_age
-        @company_structure = {}#@company_structure = {"Team":[{"cargo":"Analista1"},{"Colaborador":class.object}]}
+        @company_structure = {:Funcionarios => [],:Times => {}}#@company_structure = {"Team":[{"cargo":"Analista1"},{"Colaborador":class.object}]}
         set_cnpj
     end
 
@@ -205,22 +205,39 @@ Atributos
     Código e descrição da natureza jurídica
 =end
 
-    def self.count_entity
+    def self.count_entity#Simples contador de empresas abertas
         puts @@count_entity
     end
 
 
-    def set_cnpj
+    def set_cnpj #Defini um cpnpj para uma empresa
         new_cnpj = CnpjUtils.cnpj
         @cnpj = new_cnpj.to_cnpj_format
     end
 
 
-    def get_full_name
+    def get_full_name#Entrega o nome completo de uma empresa juntando as variaveis nome e busines_entities
         @name + ' ' + @business_entities
     end
     
-    def create_team(team_name)
+    #Aqui vou trabalhar com o @company_structure sendo assim possibilitanto criar a estrutura de colaboradores de uma empresa.
+    def hire_employee(employee)
+        if employee.alive && employee.age > 18 && employee.is_a?(Person)
+            @company_structure[:Funcionarios] << employee
+            puts "Adicionando novo colaborador..."
+            puts "Colaborador adicionado!"
+        end
+    end
+
+    def dismiss_employee(employee)
+        for employee in @company_structure[:Funcionarios]
+            @company_structure[:Funcionarios].delete(employee)
+            puts @company_structure
+        end
+    end
+    # Aqui eu preciso criar algo que funcione um pouco melhor fazer algum tipo de link entre
+    #Colaborador - Equipe -  time, onde ao mesmo tempo que for adicionado um colaborador novo ele já venha com sua equipe e cargo.
+    def create_team(team_name)#Cria uma chave dentro da estrutura da empresa. 
         @company_structure[team_name] = []
       end
     
